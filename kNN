@@ -1,0 +1,49 @@
+import numpy as np 
+import matplotlib.pyplot as plt 
+from matplotlib.colors import ListedColormap 
+from sklearn import neighbors 
+from sklearn.decomposition import PCA 
+
+#load the dataset 
+X = np.genfromtxt("iris.txt", delimiter=',', usecols=(0,1,2,3)) 
+
+# load the feature values 
+y = np.genfromtxt("iris.txt", delimiter=',', usecols=(4), dtype=str) 
+
+# load the class labels 
+for i, c in enumerate(np.unique(y)):    
+    mask = np.where(y==c)    
+    y[mask]=i 
+y=y.astype(int) 
+
+#reduce the dimensionality of X 
+pca=PCA(n_components=2) 
+Xpca=pca.fit_transform(X) 
+X = Xpca[:, :] 
+
+#fit the classifier to the newly reduced X and y 
+clf = neighbors.KNeighborsClassifier(n_neighbors=9) 
+clf.fit(X, y) print('The mean accuracy:') 
+print(clf.score(X,y)) 
+
+### ------------ from scikitlearn documentation --------------- ### 
+h = .02  # step size in the mesh 
+
+#modify the appearance of the colormap 
+cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF']) 
+cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF']) 
+
+# Build the mesh; each point in the mesh will be assigned a color by the classifier 
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1 
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),np.arange(y_min, y_max, h)) 
+Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape) 
+plt.pcolormesh(xx, yy, Z, cmap=cmap_light) 
+
+#plot the original data points onto the new 2D space 
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold, edgecolor='k', s=20)
+### ----------------------------------------------------------- ### 
+ 
+plt.title("kNN for Irises") 
+plt.show()
